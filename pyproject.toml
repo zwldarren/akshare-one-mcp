@@ -7,7 +7,7 @@ license = { text = "MIT" }
 authors = [{ name = "zwldarren", email = "zwldarren@gmail.com" }]
 requires-python = ">=3.12"
 dependencies = [
-    "akshare-one>=0.3.1",
+    "akshare-one>=0.3.3",
     "fastmcp>=2.9.2",
 ]
 keywords = ["akshare", "stock", "mcp", "mcp-server"]
