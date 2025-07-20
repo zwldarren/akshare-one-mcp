@@ -101,7 +101,7 @@ def get_realtime_data(
     source: Annotated[
         Literal["xueqiu", "eastmoney", "eastmoney_direct"],
         Field(description="Data source"),
-    ] = "xueqiu",
+    ] = "eastmoney_direct",
 ) -> str:
     """Get real-time stock market data. 'eastmoney_direct' support all A,B,H shares"""
     df = ako.get_realtime_data(symbol=symbol, source=source)
