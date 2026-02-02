@@ -148,15 +148,15 @@ wheels = [
 
 [[package]]
 name = "akshare-one"
-version = "0.3.17"
+version = "0.4.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "akshare" },
     { name = "cachetools" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/a8/5b/2cd352e32014416094ab9b025d731ce6db7c33a0e45814917c6d5c95f38a/akshare_one-0.3.17.tar.gz", hash = "sha256:b1529abe95f1c355ffe503bd598192a57b8cede163007c50c300b66f3bc21ab3", size = 33504, upload-time = "2026-01-08T01:23:17.793Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/b8/44/f42539f31f9a7902b00ebe8e8056696fb0499605dbb4771013f5f2e15f95/akshare_one-0.4.0.tar.gz", hash = "sha256:7f5b0f4112a90bb1e31766eb365e769faacba8a8f296d8cc55caf18d7c9b5a07", size = 34317, upload-time = "2026-01-27T01:57:30.299Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/17/d6/1a3a537a9d4cbf5f38d93ea3e0d2bafdf4424dfa7c987ee81200f53b19a9/akshare_one-0.3.17-py3-none-any.whl", hash = "sha256:5cc3864f2f9f91b7fee16f601ece12a7f908b6f2177e43f19e03359ed7704e70", size = 55774, upload-time = "2026-01-08T01:23:18.582Z" },
+    { url = "https://files.pythonhosted.org/packages/f3/d1/2c1831fd308bff392ee516f32845533e1a58a7808fadb964dfcf9c0d932c/akshare_one-0.4.0-py3-none-any.whl", hash = "sha256:4ac0fce48f96a1ec0fae771fa2d9bda807ddcee319a75a2ac45b45e173fbb17c", size = 56389, upload-time = "2026-01-27T01:57:32.268Z" },
 ]
 
 [[package]]
