@@ -1,12 +1,24 @@
+from collections.abc import Callable
 from datetime import datetime
-from typing import Annotated, Literal
+from typing import Annotated, Any, Literal
 
 import akshare as ak
 import akshare_one as ako
+import pandas as pd
 from akshare_one import indicators
 from fastmcp import FastMCP
 from pydantic import Field
 
+from akshare_one_mcp.providers import (
+    FINANCIAL_SOURCES,
+    HISTORICAL_SOURCES,
+    REALTIME_SOURCES,
+    FinancialSource,
+    HistoricalSource,
+    RealtimeSource,
+    fetch_with_fallback,
+    source_candidates,
+)
 
 mcp = FastMCP(name="akshare-one-mcp")
 
@@ -30,10 +42,13 @@ def get_hist_data(
     adjust: Annotated[
         Literal["none", "qfq", "hfq"], Field(description="Adjustment type")
     ] = "none",
-    source: Annotated[
-        Literal["eastmoney", "eastmoney_direct", "sina"],
-        Field(description="Data source"),
-    ] = "eastmoney",
+    source: Annotated[HistoricalSource, Field(description="Data source")] = "eastmoney",
+    fallback: Annotated[
+        bool,
+        Field(
+            description="Try the domain's other data sources when this one fails or has no data"
+        ),
+    ] = True,
     indicators_list: Annotated[
         list[
             Literal[
@@ -80,18 +95,30 @@ def get_hist_data(
         int | None, Field(description="Number of most recent records to return", ge=1)
     ] = 100,
 ) -> str:
-    """Get historical stock market data. 'eastmoney_direct' support all A,B,H shares"""
-    df = ako.get_hist_data(
-        symbol=symbol,
-        interval=interval,
-        interval_multiplier=interval_multiplier,
-        start_date=start_date,
-        end_date=end_date,
-        adjust=adjust,
-        source=source,
+    """Get historical stock market data. 'eastmoney_direct' support all A,B,H shares
+
+    With fallback on, the sources are tried as 'eastmoney', 'eastmoney_direct'
+    and 'sina', starting with the requested one.
+    """
+
+    def fetch(name: HistoricalSource) -> pd.DataFrame:
+        return ako.get_hist_data(
+            symbol=symbol,
+            interval=interval,
+            interval_multiplier=interval_multiplier,
+            start_date=start_date,
+            end_date=end_date,
+            adjust=adjust,
+            source=name,
+        )
+
+    df = fetch_with_fallback(
+        domain="historical",
+        candidates=source_candidates(source, HISTORICAL_SOURCES, fallback=fallback),
+        fetch=fetch,
     )
     if indicators_list:
-        indicator_map = {
+        indicator_map: dict[str, tuple[Callable[..., Any], dict[str, Any]]] = {
             "SMA": (indicators.get_sma, {"window": 20}),
             "EMA": (indicators.get_ema, {"window": 20}),
             "RSI": (indicators.get_rsi, {"window": 14}),
@@ -143,7 +170,7 @@ def get_hist_data(
         for indicator in indicators_list:
             if indicator in indicator_map:
                 func, params = indicator_map[indicator]
-                indicator_df = func(df, **params)  # type: ignore[arg-type]
+                indicator_df = func(df, **params)
                 temp.append(indicator_df)
         if temp:
             df = df.join(temp)
@@ -158,12 +185,36 @@ def get_realtime_data(
         str | None, Field(description="Stock symbol/ticker (e.g. '000001')")
     ] = None,
     source: Annotated[
-        Literal["xueqiu", "eastmoney", "eastmoney_direct"],
-        Field(description="Data source"),
+        RealtimeSource, Field(description="Data source")
     ] = "eastmoney_direct",
+    fallback: Annotated[
+        bool,
+        Field(
+            description="Try the domain's other data sources when this one fails or has no data"
+        ),
+    ] = True,
 ) -> str:
-    """Get real-time stock market data. 'eastmoney_direct' support all A,B,H shares"""
-    df = ako.get_realtime_data(symbol=symbol, source=source)
+    """Get real-time stock market data. 'eastmoney_direct' support all A,B,H shares
+
+    With fallback on, the sources are tried as 'eastmoney_direct', 'eastmoney'
+    and 'xueqiu', starting with the requested one.
+    """
+    # XueQiu quotes one symbol at a time, so it cannot serve the whole-market
+    # snapshot that a missing symbol asks for.
+    order = (
+        REALTIME_SOURCES
+        if symbol
+        else tuple(name for name in REALTIME_SOURCES if name != "xueqiu")
+    )
+
+    def fetch(name: RealtimeSource) -> pd.DataFrame:
+        return ako.get_realtime_data(symbol=symbol, source=name)
+
+    df = fetch_with_fallback(
+        domain="realtime",
+        candidates=source_candidates(source, order, fallback=fallback),
+        fetch=fetch,
+    )
     return df.to_json(orient="records") or "[]"
 
 
@@ -184,12 +235,31 @@ def get_news_data(
 @mcp.tool
 def get_balance_sheet(
     symbol: Annotated[str, Field(description="Stock symbol/ticker (e.g. '000001')")],
+    source: Annotated[FinancialSource, Field(description="Data source")] = "sina",
+    fallback: Annotated[
+        bool,
+        Field(
+            description="Try the domain's other data sources when this one fails or has no data"
+        ),
+    ] = True,
     recent_n: Annotated[
         int | None, Field(description="Number of most recent records to return", ge=1)
     ] = 10,
 ) -> str:
-    """Get company balance sheet data."""
-    df = ako.get_balance_sheet(symbol=symbol, source="sina")
+    """Get company balance sheet data.
+
+    With fallback on, the sources are tried as 'sina' and 'eastmoney_direct',
+    starting with the requested one.
+    """
+
+    def fetch(name: FinancialSource) -> pd.DataFrame:
+        return ako.get_balance_sheet(symbol=symbol, source=name)
+
+    df = fetch_with_fallback(
+        domain="balance sheet",
+        candidates=source_candidates(source, FINANCIAL_SOURCES, fallback=fallback),
+        fetch=fetch,
+    )
     if recent_n is not None:
         df = df.head(recent_n)
     return df.to_json(orient="records") or "[]"
@@ -198,12 +268,31 @@ def get_balance_sheet(
 @mcp.tool
 def get_income_statement(
     symbol: Annotated[str, Field(description="Stock symbol/ticker (e.g. '000001')")],
+    source: Annotated[FinancialSource, Field(description="Data source")] = "sina",
+    fallback: Annotated[
+        bool,
+        Field(
+            description="Try the domain's other data sources when this one fails or has no data"
+        ),
+    ] = True,
     recent_n: Annotated[
         int | None, Field(description="Number of most recent records to return", ge=1)
     ] = 10,
 ) -> str:
-    """Get company income statement data."""
-    df = ako.get_income_statement(symbol=symbol, source="sina")
+    """Get company income statement data.
+
+    With fallback on, the sources are tried as 'sina' and 'eastmoney_direct',
+    starting with the requested one.
+    """
+
+    def fetch(name: FinancialSource) -> pd.DataFrame:
+        return ako.get_income_statement(symbol=symbol, source=name)
+
+    df = fetch_with_fallback(
+        domain="income statement",
+        candidates=source_candidates(source, FINANCIAL_SOURCES, fallback=fallback),
+        fetch=fetch,
+    )
     if recent_n is not None:
         df = df.head(recent_n)
     return df.to_json(orient="records") or "[]"
@@ -212,13 +301,31 @@ def get_income_statement(
 @mcp.tool
 def get_cash_flow(
     symbol: Annotated[str, Field(description="Stock symbol/ticker (e.g. '000001')")],
-    source: Annotated[Literal["sina"], Field(description="Data source")] = "sina",
+    source: Annotated[FinancialSource, Field(description="Data source")] = "sina",
+    fallback: Annotated[
+        bool,
+        Field(
+            description="Try the domain's other data sources when this one fails or has no data"
+        ),
+    ] = True,
     recent_n: Annotated[
         int | None, Field(description="Number of most recent records to return", ge=1)
     ] = 10,
 ) -> str:
-    """Get company cash flow statement data."""
-    df = ako.get_cash_flow(symbol=symbol, source=source)
+    """Get company cash flow statement data.
+
+    With fallback on, the sources are tried as 'sina' and 'eastmoney_direct',
+    starting with the requested one.
+    """
+
+    def fetch(name: FinancialSource) -> pd.DataFrame:
+        return ako.get_cash_flow(symbol=symbol, source=name)
+
+    df = fetch_with_fallback(
+        domain="cash flow",
+        candidates=source_candidates(source, FINANCIAL_SOURCES, fallback=fallback),
+        fetch=fetch,
+    )
     if recent_n is not None:
         df = df.head(recent_n)
     return df.to_json(orient="records") or "[]"
@@ -236,14 +343,34 @@ def get_inner_trade_data(
 @mcp.tool
 def get_financial_metrics(
     symbol: Annotated[str, Field(description="Stock symbol/ticker (e.g. '000001')")],
+    source: Annotated[
+        FinancialSource, Field(description="Data source")
+    ] = "eastmoney_direct",
+    fallback: Annotated[
+        bool,
+        Field(
+            description="Try the domain's other data sources when this one fails or has no data"
+        ),
+    ] = True,
     recent_n: Annotated[
         int | None, Field(description="Number of most recent records to return", ge=1)
     ] = 10,
 ) -> str:
     """
     Get key financial metrics from the three major financial statements.
+
+    With fallback on, the sources are tried as 'sina' and 'eastmoney_direct',
+    starting with the requested one.
     """
-    df = ako.get_financial_metrics(symbol)
+
+    def fetch(name: FinancialSource) -> pd.DataFrame:
+        return ako.get_financial_metrics(symbol=symbol, source=name)
+
+    df = fetch_with_fallback(
+        domain="financial metrics",
+        candidates=source_candidates(source, FINANCIAL_SOURCES, fallback=fallback),
+        fetch=fetch,
+    )
     if recent_n is not None:
         df = df.head(recent_n)
     return df.to_json(orient="records") or "[]"

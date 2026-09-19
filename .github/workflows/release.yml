@@ -1,0 +1,152 @@
+name: Release
+
+# Publishes to PyPI and cuts the GitHub release. The MCP registry entry is
+# published by publish-registry.yml, which waits for the version to land on PyPI
+# before it runs.
+#
+# Triggered by a vX.Y.Z tag (cut manually or by prepare-release.yml), or
+# dispatched directly at an existing tag after prepare-release.yml pushed it
+# (a GITHUB_TOKEN tag push does not trigger the push event itself).
+#
+# Renaming this file means the PyPI trusted publisher must be updated to match:
+# PyPI validates the workflow path (Manage project -> Publishing -> GitHub).
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v10.1.0
+        with:
+          enable-cache: true
+
+      - name: Install dependencies
+        run: uv sync --locked
+
+      - name: Lint
+        run: |
+          uv run ruff check .
+          uv run ruff format --check .
+
+      - name: Type check
+        run: uv run mypy src
+
+      # Stands in for a test suite: this project has none, so verify that the
+      # locked akshare-one and fastmcp still provide what the server calls into.
+      - name: Smoke test
+        run: |
+          uv run python - <<'PY'
+          import asyncio
+          import pathlib
+          import re
+
+          import akshare_one as ako
+          from akshare_one import indicators
+          from fastmcp import Client
+
+          from akshare_one_mcp.server import mcp
+
+          source = pathlib.Path("src/akshare_one_mcp/server.py").read_text()
+          missing = [
+              f"{alias}.{name}"
+              for alias, module in (("ako", ako), ("indicators", indicators))
+              for name in sorted(set(re.findall(rf"\b{alias}\.(\w+)", source)))
+              if not hasattr(module, name)
+          ]
+          if missing:
+              raise SystemExit(f"akshare-one API mismatch: {', '.join(missing)}")
+
+
+          async def main() -> None:
+              async with Client(mcp) as client:
+                  tools = await client.list_tools()
+              print(f"{len(tools)} tools registered: {sorted(t.name for t in tools)}")
+
+
+          asyncio.run(main())
+          PY
+
+      - name: Verify tag matches pyproject version
+        run: |
+          if [[ "$GITHUB_REF" != refs/tags/v* ]]; then
+            echo "::error::$GITHUB_REF is not a vX.Y.Z tag; use the Prepare release workflow"
+            exit 1
+          fi
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          PROJECT_VERSION="$(python3 -c 'import tomllib; print(tomllib.load(open("pyproject.toml", "rb"))["project"]["version"])')"
+          if [ "$TAG_VERSION" != "$PROJECT_VERSION" ]; then
+            echo "::error::tag ${GITHUB_REF_NAME} does not match pyproject.toml version ${PROJECT_VERSION}"
+            exit 1
+          fi
+          echo "Releasing version ${TAG_VERSION}"
+
+      - name: Build sdist and wheel
+        run: uv build
+
+      - name: Check distribution metadata
+        run: uvx twine check dist/*
+
+      - name: Upload distributions
+        uses: actions/upload-artifact@v7
+        with:
+          name: dist
+          path: dist/
+
+  pypi-publish:
+    needs: build
+    # PyPI trusted publishing (OIDC): no API token stored in GitHub. Requires a
+    # publisher on PyPI for this repo, this workflow file, and the "pypi"
+    # environment.
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      id-token: write
+    steps:
+      - name: Download distributions
+        uses: actions/download-artifact@v8
+        with:
+          name: dist
+          path: dist/
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+
+  github-release:
+    needs: pypi-publish
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download distributions
+        uses: actions/download-artifact@v8
+        with:
+          name: dist
+          path: dist/
+
+      - name: Create or refresh GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # gh needs a repository context and this job has no checkout, so pass
+          # -R explicitly; gh does not read GITHUB_REPOSITORY on its own and
+          # otherwise dies with "fatal: not a git repository".
+          repo="$GITHUB_REPOSITORY"
+          version="${GITHUB_REF_NAME#v}"
+          if gh release view "$GITHUB_REF_NAME" -R "$repo" >/dev/null 2>&1; then
+            # Re-run after a partial failure: the release already exists, so
+            # refresh its assets instead of failing on the duplicate.
+            gh release upload "$GITHUB_REF_NAME" dist/* --clobber -R "$repo"
+          else
+            gh release create "$GITHUB_REF_NAME" dist/* --verify-tag --generate-notes \
+              --title "Release ${version}" -R "$repo"
+          fi

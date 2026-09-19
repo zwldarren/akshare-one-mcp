@@ -1,0 +1,81 @@
+name: Publish to MCP Registry
+
+# Publishes server.json to the MCP registry. Kept separate from release.yml so a
+# registry problem is isolated: it cannot mark the PyPI release red, and vice
+# versa.
+#
+# The registry rejects a version that is not on PyPI yet, so this workflow waits
+# for the version to appear there before publishing. That ordering used to be
+# implicit and wrong: the registry job started in parallel with the PyPI upload
+# and failed for v0.3.7, v0.3.8 and v0.3.9.
+on:
+  push:
+    tags: ["v*"]
+  # Manual escape hatch: dispatch at any ref to (re)publish a specific version,
+  # including one whose registry publish failed.
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to publish to the MCP registry (without the leading v)"
+        required: true
+        type: string
+
+permissions: {}
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write # Required for the github-oidc login to the registry
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Resolve version
+        id: version
+        env:
+          INPUT_VERSION: ${{ inputs.version }}
+        run: |
+          version="${INPUT_VERSION:-${GITHUB_REF_NAME#v}}"
+          if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::could not resolve an X.Y.Z version (got '$version')"
+            exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - name: Wait for the version to reach PyPI
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          url="https://pypi.org/pypi/akshare-one-mcp/${VERSION}/json"
+          for attempt in {1..30}; do
+            if curl -fsS -o /dev/null "$url"; then
+              echo "akshare-one-mcp ${VERSION} is on PyPI"
+              exit 0
+            fi
+            echo "attempt ${attempt}: ${VERSION} is not on PyPI yet, retrying in 10s"
+            sleep 10
+          done
+          echo "::error::akshare-one-mcp ${VERSION} never reached PyPI"
+          exit 1
+
+      - name: Set server.json version
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          jq --arg v "$VERSION" '.version = $v | .packages[0].version = $v' server.json > server.json.tmp
+          mv server.json.tmp server.json
+          cat server.json
+
+      - name: Install MCP Publisher
+        run: |
+          curl -fsSL "https://github.com/modelcontextprotocol/registry/releases/download/v1.8.1/mcp-publisher_$(uname -s | tr '[:upper:]' '[:lower:]')_$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/').tar.gz" | tar xz mcp-publisher
+
+      - name: Validate server.json
+        run: ./mcp-publisher validate
+
+      - name: Login to MCP Registry
+        run: ./mcp-publisher login github-oidc
+
+      - name: Publish to MCP Registry
+        run: ./mcp-publisher publish
