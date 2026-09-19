@@ -1,13 +1,18 @@
 {
-  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-10-17/server.schema.json",
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.zwldarren/akshare-one-mcp",
   "description": "MCP server that provides access to Chinese stock market data using akshare-one",
-  "version": "0.3.7",
+  "version": "0.3.9",
+  "repository": {
+    "id": "962429346",
+    "source": "github",
+    "url": "https://github.com/zwldarren/akshare-one-mcp"
+  },
   "packages": [
     {
       "registryType": "pypi",
       "identifier": "akshare-one-mcp",
-      "version": "0.3.7",
+      "version": "0.3.9",
       "transport": {
         "type": "stdio"
       }
