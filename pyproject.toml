@@ -3,19 +3,34 @@ name = "akshare-one-mcp"
 version = "0.3.9"
 description = "MCP server that provides access to Chinese stock market data using akshare-one"
 readme = "README.md"
-license = { text = "MIT" }
+license = "MIT"
+license-files = ["LICENSE"]
 authors = [{ name = "zwldarren", email = "zwldarren@gmail.com" }]
 requires-python = ">=3.12"
 dependencies = [
-    "akshare-one>=0.3.14",
+    "akshare-one>=0.5.1",
     "fastmcp>=2.11.3",
-    "uvicorn>=0.35.0"
+    "uvicorn>=0.35.0",
+    # Imported directly by providers.py to type the fallback helper (akshare-one
+    # pulls pandas in too, but we depend on it explicitly so this package keeps
+    # working if akshare-one changes its dependency set).
+    "pandas>=2.0",
 ]
 keywords = ["akshare", "stock", "mcp", "mcp-server"]
+classifiers = [
+    "Intended Audience :: Financial and Insurance Industry",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Office/Business :: Financial :: Investment",
+]
 
 [dependency-groups]
 dev = [
     "mypy>=1.18.2",
+    "pandas-stubs>=2.3.0.250703",
     "ruff>=0.14.3",
 ]
 
@@ -27,8 +42,14 @@ Repository = "https://github.com/zwldarren/akshare-one-mcp.git"
 akshare-one-mcp = "akshare_one_mcp.__main__:main"
 
 [build-system]
-requires = ["uv_build"]
+requires = ["uv_build>=0.12,<0.13"]
 build-backend = "uv_build"
 
 [tool.pyright]
 typeCheckingMode = "standard"
+
+[tool.mypy]
+[[tool.mypy.overrides]]
+# akshare ships neither a py.typed marker nor a stub package.
+module = ["akshare", "akshare.*"]
+ignore_missing_imports = true

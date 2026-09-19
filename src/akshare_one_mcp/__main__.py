@@ -1,10 +1,10 @@
 import argparse
 import logging
+
 import uvicorn
 from starlette.middleware.cors import CORSMiddleware
 
 from akshare_one_mcp.server import mcp
-
 
 logger = logging.getLogger(__name__)
 
