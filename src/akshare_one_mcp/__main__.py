@@ -1,5 +1,6 @@
 import argparse
 import logging
+import sys
 
 import uvicorn
 from starlette.middleware.cors import CORSMiddleware
@@ -47,7 +48,8 @@ def main():
         uvicorn.run(app, host=args.host, port=args.port, log_level="debug")
     else:
         # stdio mode (default)
-        print("MCP Server starting in stdio mode...")
+        # stdout is reserved for JSON-RPC messages here, so log to stderr only.
+        print("MCP Server starting in stdio mode...", file=sys.stderr)
         mcp.run()
 
 
