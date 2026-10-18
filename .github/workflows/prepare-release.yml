@@ -74,6 +74,8 @@ jobs:
           VERSION: ${{ inputs.version }}
         run: |
           gh workflow run release.yml --ref "v$VERSION"
-          gh workflow run publish-registry.yml --ref "v$VERSION"
+          # publish-registry.yml declares version as a required dispatch input, so a
+          # bare dispatch is rejected with HTTP 422.
+          gh workflow run publish-registry.yml --ref "v$VERSION" -f version="$VERSION"
           sleep 5
           gh run list --limit 2
