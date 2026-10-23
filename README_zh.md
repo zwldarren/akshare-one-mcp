@@ -31,12 +31,13 @@
 
 ### 数据源自动降级
 
-除 `get_news_data` 和 `get_inner_trade_data`（上游只有一个数据源）外，每个工具的 `source` 参数都可以指定首选数据源，`fallback` 参数（默认开启）决定首选数据源**报错**或**返回空数据**时，是否继续尝试同领域的其他数据源：
+除 `get_inner_trade_data`（上游只有一个数据源）外，每个数据工具的 `source` 参数都可以指定首选数据源，`fallback` 参数（默认开启）决定首选数据源**报错**或**返回空数据**时，是否继续尝试同领域的其他数据源：
 
 | 领域 | 尝试顺序 |
 | --- | --- |
-| 历史行情 | `eastmoney` → `eastmoney_direct` → `sina` |
-| 实时行情 | `eastmoney_direct` → `eastmoney` → `xueqiu`（未指定股票代码时跳过 `xueqiu`） |
+| 历史行情 | `eastmoney` → `eastmoney_direct` → `sina` → `ths` |
+| 实时行情 | `eastmoney_direct` → `eastmoney` → `xueqiu` → `ths`（未指定股票代码时跳过最后两个） |
+| 新闻资讯 | `eastmoney` → `ths` |
 | 财务报表 | `sina` ⇄ `eastmoney_direct` |
 
 指定的 `source` 始终排在第一位，顺序只是降级时的尝试次序。akshare-one 会把每个数据源的结果对齐到该领域声明的列，因此降级不会改变返回的字段名和字段顺序。所有数据源都失败时会抛出错误并逐一列出失败原因；如果全部数据源都成功但都没有数据，则返回空结果。把 `fallback` 设为 `false` 可以固定单一数据源，此时数据源出错会直接报错，便于确认数据到底来自哪里。
@@ -57,8 +58,8 @@
 - `start_date` (string, 可选): 开始日期，格式：YYYY-MM-DD，默认 '1970-01-01'
 - `end_date` (string, 可选): 结束日期，格式：YYYY-MM-DD，默认 '2030-12-31'
 - `adjust` (string, 可选): 复权方式，'none'(不复权)、'qfq'(前复权)、'hfq'(后复权)，默认 'none'
-- `source` (string, 可选): 数据源，'eastmoney'(东方财富)、'eastmoney_direct'(东方财富直连)、'sina'(新浪)，默认 'eastmoney'
-- `fallback` (boolean, 可选): 首选数据源失败或没有数据时，是否按 'eastmoney'、'eastmoney_direct'、'sina' 的顺序尝试其他数据源，默认 true
+- `source` (string, 可选): 数据源，'eastmoney'(东方财富)、'eastmoney_direct'(东方财富直连)、'sina'(新浪)、'ths'(同花顺)，默认 'eastmoney'
+- `fallback` (boolean, 可选): 首选数据源失败或没有数据时，是否按 'eastmoney'、'eastmoney_direct'、'sina'、'ths' 的顺序尝试其他数据源，默认 true
 - `indicators_list` (list, 可选): 技术指标列表
 - `recent_n` (number, 可选): 返回最新记录数，默认 100
 
@@ -70,8 +71,8 @@
 <summary>参数说明</summary>
 
 - `symbol` (string, 可选): 股票代码，留空获取所有股票概览
-- `source` (string, 可选): 数据源，'eastmoney_direct'(东方财富直连)、'eastmoney'(东方财富)、'xueqiu'(雪球)，默认 'eastmoney_direct'
-- `fallback` (boolean, 可选): 首选数据源失败或没有数据时，是否按 'eastmoney_direct'、'eastmoney'、'xueqiu' 的顺序尝试其他数据源，默认 true（未指定股票代码时不会尝试 'xueqiu'，它只能查询单只股票）
+- `source` (string, 可选): 数据源，'eastmoney_direct'(东方财富直连)、'eastmoney'(东方财富)、'xueqiu'(雪球)、'ths'(同花顺)，默认 'eastmoney_direct'
+- `fallback` (boolean, 可选): 首选数据源失败或没有数据时，是否按 'eastmoney_direct'、'eastmoney'、'xueqiu'、'ths' 的顺序尝试其他数据源，默认 true（未指定股票代码时不会尝试 'xueqiu' 和 'ths'，它们只能查询单只股票）
 
 </details>
 
@@ -83,7 +84,9 @@
 <summary>参数说明</summary>
 
 - `symbol` (string, 必填): 股票代码
-- `recent_n` (number, 可选): 返回最新记录数，默认 10
+- `source` (string, 可选): 数据源，'eastmoney'(东方财富)、'ths'(同花顺)，默认 'eastmoney'
+- `fallback` (boolean, 可选): 首选数据源失败或没有数据时，是否按 'eastmoney'、'ths' 的顺序尝试其他数据源，默认 true
+- `recent_n` (number, 可选): 返回最新记录数，按发布时间由新到旧排序，默认 10
 
 </details>
 

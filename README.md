@@ -26,12 +26,13 @@ An MCP server based on [akshare-one](https://github.com/zwldarren/akshare-one), 
 
 ### Automatic source fallback
 
-Except for `get_news_data` and `get_inner_trade_data`, whose upstream exposes a single source, every tool takes a `source` parameter for the preferred data source and a `fallback` parameter (on by default) that decides whether the other sources of the same domain are tried when that source **raises** or **returns an empty frame**:
+Except for `get_inner_trade_data`, whose upstream exposes a single source, every data tool takes a `source` parameter for the preferred data source and a `fallback` parameter (on by default) that decides whether the other sources of the same domain are tried when that source **raises** or **returns an empty frame**:
 
 | Domain | Order tried |
 | --- | --- |
-| Historical | `eastmoney` → `eastmoney_direct` → `sina` |
-| Real-time | `eastmoney_direct` → `eastmoney` → `xueqiu` (skipped when no symbol is given) |
+| Historical | `eastmoney` → `eastmoney_direct` → `sina` → `ths` |
+| Real-time | `eastmoney_direct` → `eastmoney` → `xueqiu` → `ths` (the last two are skipped when no symbol is given) |
+| News | `eastmoney` → `ths` |
 | Financial statements | `sina` ⇄ `eastmoney_direct` |
 
 The requested `source` is always tried first; the order only governs the fallback. Because akshare-one projects every source onto its domain's declared columns, falling back cannot change the field names or their order. When every source fails, the error lists each one and why it failed; when every source succeeds but has no data, an empty result is returned. Set `fallback` to `false` to pin a single source — a failure then surfaces directly, which is useful when you need to know exactly where the numbers came from.
@@ -52,8 +53,8 @@ Get historical stock market data with support for multiple time periods and adju
 - `start_date` (string, optional): Start date in YYYY-MM-DD format (default: '1970-01-01')
 - `end_date` (string, optional): End date in YYYY-MM-DD format (default: '2030-12-31')
 - `adjust` (string, optional): Adjustment type ('none', 'qfq', 'hfq') (default: 'none')
-- `source` (string, optional): Data source ('eastmoney', 'eastmoney_direct', 'sina') (default: 'eastmoney')
-- `fallback` (boolean, optional): Try 'eastmoney', 'eastmoney_direct' and 'sina' in order when the chosen source fails or has no data (default: true)
+- `source` (string, optional): Data source ('eastmoney', 'eastmoney_direct', 'sina', 'ths') (default: 'eastmoney')
+- `fallback` (boolean, optional): Try 'eastmoney', 'eastmoney_direct', 'sina' and 'ths' in order when the chosen source fails or has no data (default: true)
 - `indicators_list` (list, optional): Technical indicators to add
 - `recent_n` (number, optional): Number of most recent records to return (default: 100)
 
@@ -66,8 +67,8 @@ Get real-time stock market data.
 <summary>Parameters</summary>
 
 - `symbol` (string, optional): Stock code
-- `source` (string, optional): Data source ('eastmoney_direct', 'eastmoney', 'xueqiu') (default: 'eastmoney_direct')
-- `fallback` (boolean, optional): Try 'eastmoney_direct', 'eastmoney' and 'xueqiu' in order when the chosen source fails or has no data (default: true; 'xueqiu' is skipped when no symbol is given, as it quotes one symbol at a time)
+- `source` (string, optional): Data source ('eastmoney_direct', 'eastmoney', 'xueqiu', 'ths') (default: 'eastmoney_direct')
+- `fallback` (boolean, optional): Try 'eastmoney_direct', 'eastmoney', 'xueqiu' and 'ths' in order when the chosen source fails or has no data (default: true; 'xueqiu' and 'ths' are skipped when no symbol is given, as they quote one symbol at a time)
 
 </details>
 
@@ -80,7 +81,9 @@ Get stock-related news data.
 <summary>Parameters</summary>
 
 - `symbol` (string, required): Stock code
-- `recent_n` (number, optional): Number of most recent records to return (default: 10)
+- `source` (string, optional): Data source ('eastmoney', 'ths') (default: 'eastmoney')
+- `fallback` (boolean, optional): Try 'eastmoney' and 'ths' in order when the chosen source fails or has no data (default: true)
+- `recent_n` (number, optional): Number of most recent records to return, newest first (default: 10)
 
 </details>
 

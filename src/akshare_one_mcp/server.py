@@ -12,9 +12,12 @@ from pydantic import Field
 from akshare_one_mcp.providers import (
     FINANCIAL_SOURCES,
     HISTORICAL_SOURCES,
+    NEWS_SOURCES,
+    REALTIME_SINGLE_SYMBOL,
     REALTIME_SOURCES,
     FinancialSource,
     HistoricalSource,
+    NewsSource,
     RealtimeSource,
     fetch_with_fallback,
     source_candidates,
@@ -97,8 +100,8 @@ def get_hist_data(
 ) -> str:
     """Get historical stock market data. 'eastmoney_direct' support all A,B,H shares
 
-    With fallback on, the sources are tried as 'eastmoney', 'eastmoney_direct'
-    and 'sina', starting with the requested one.
+    With fallback on, the sources are tried as 'eastmoney', 'eastmoney_direct',
+    'sina' and 'ths', starting with the requested one.
     """
 
     def fetch(name: HistoricalSource) -> pd.DataFrame:
@@ -196,15 +199,17 @@ def get_realtime_data(
 ) -> str:
     """Get real-time stock market data. 'eastmoney_direct' support all A,B,H shares
 
-    With fallback on, the sources are tried as 'eastmoney_direct', 'eastmoney'
-    and 'xueqiu', starting with the requested one.
+    With fallback on, the sources are tried as 'eastmoney_direct', 'eastmoney',
+    'xueqiu' and 'ths', starting with the requested one.
     """
-    # XueQiu quotes one symbol at a time, so it cannot serve the whole-market
-    # snapshot that a missing symbol asks for.
+    # XueQiu and Tonghuashun quote one symbol at a time, so they cannot serve
+    # the whole-market snapshot that a missing symbol asks for.
     order = (
         REALTIME_SOURCES
         if symbol
-        else tuple(name for name in REALTIME_SOURCES if name != "xueqiu")
+        else tuple(
+            name for name in REALTIME_SOURCES if name not in REALTIME_SINGLE_SYMBOL
+        )
     )
 
     def fetch(name: RealtimeSource) -> pd.DataFrame:
@@ -221,14 +226,36 @@ def get_realtime_data(
 @mcp.tool
 def get_news_data(
     symbol: Annotated[str, Field(description="Stock symbol/ticker (e.g. '000001')")],
+    source: Annotated[NewsSource, Field(description="Data source")] = "eastmoney",
+    fallback: Annotated[
+        bool,
+        Field(
+            description="Try the domain's other data sources when this one fails or has no data"
+        ),
+    ] = True,
     recent_n: Annotated[
         int | None, Field(description="Number of most recent records to return", ge=1)
     ] = 10,
 ) -> str:
-    """Get stock-related news data."""
-    df = ako.get_news_data(symbol=symbol, source="eastmoney")
+    """Get stock-related news data.
+
+    With fallback on, the sources are tried as 'eastmoney' and 'ths', starting
+    with the requested one.
+    """
+
+    def fetch(name: NewsSource) -> pd.DataFrame:
+        return ako.get_news_data(symbol=symbol, source=name)
+
+    df = fetch_with_fallback(
+        domain="news",
+        candidates=source_candidates(source, NEWS_SOURCES, fallback=fallback),
+        fetch=fetch,
+    )
+    # Sources order their items differently, so sort here to make recent_n mean
+    # the same thing whichever one served the call.
+    df = df.sort_values("publish_time", ascending=False)
     if recent_n is not None:
-        df = df.tail(recent_n)
+        df = df.head(recent_n)
     return df.to_json(orient="records") or "[]"
 
 

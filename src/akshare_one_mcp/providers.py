@@ -20,21 +20,29 @@ logger = logging.getLogger(__name__)
 # the tool's default source at the head so an unchanged call still tries that
 # source first. Every name in a tuple must come from its alias, which mypy
 # checks; the names must match akshare-one's own ``Literal``s.
-HistoricalSource = Literal["eastmoney", "eastmoney_direct", "sina"]
-RealtimeSource = Literal["eastmoney_direct", "eastmoney", "xueqiu"]
+HistoricalSource = Literal["eastmoney", "eastmoney_direct", "sina", "ths"]
+RealtimeSource = Literal["eastmoney_direct", "eastmoney", "xueqiu", "ths"]
+NewsSource = Literal["eastmoney", "ths"]
 FinancialSource = Literal["sina", "eastmoney_direct"]
 
 HISTORICAL_SOURCES: tuple[HistoricalSource, ...] = (
     "eastmoney",
     "eastmoney_direct",
     "sina",
+    "ths",
 )
 REALTIME_SOURCES: tuple[RealtimeSource, ...] = (
     "eastmoney_direct",
     "eastmoney",
     "xueqiu",
+    "ths",
 )
+NEWS_SOURCES: tuple[NewsSource, ...] = ("eastmoney", "ths")
 FINANCIAL_SOURCES: tuple[FinancialSource, ...] = ("sina", "eastmoney_direct")
+
+#: Realtime sources that quote one security per request, so they cannot serve
+#: the whole-market snapshot that a missing symbol asks for.
+REALTIME_SINGLE_SYMBOL: tuple[RealtimeSource, ...] = ("xueqiu", "ths")
 
 
 def source_candidates[SourceT: str](
