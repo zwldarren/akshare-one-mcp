@@ -8,7 +8,7 @@ license-files = ["LICENSE"]
 authors = [{ name = "zwldarren", email = "zwldarren@gmail.com" }]
 requires-python = ">=3.12"
 dependencies = [
-    "akshare-one>=0.5.1",
+    "akshare-one>=0.6.0",
     "fastmcp>=2.11.3",
     "uvicorn>=0.35.0",
     # Imported directly by providers.py to type the fallback helper (akshare-one
