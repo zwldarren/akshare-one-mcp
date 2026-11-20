@@ -16,7 +16,7 @@
 
 ## Overview
 
-An MCP server based on [akshare-one](https://github.com/zwldarren/akshare-one), providing comprehensive interfaces for China stock market data. It offers a set of powerful tools for retrieving financial information including historical stock data, real-time data, news data, and financial statements.
+An MCP server based on [akshare-one](https://github.com/zwldarren/akshare-one), providing comprehensive interfaces for China stock market data. It offers a set of powerful tools for retrieving financial information including historical stock data, real-time data, news data, valuation data, and financial statements.
 
 <a href="https://glama.ai/mcp/servers/@zwldarren/akshare-one-mcp">
   <img width="380" height="200" src="https://glama.ai/mcp/servers/@zwldarren/akshare-one-mcp/badge" alt="akshare-one-mcp MCP server" />
@@ -26,7 +26,7 @@ An MCP server based on [akshare-one](https://github.com/zwldarren/akshare-one), 
 
 ### Automatic source fallback
 
-Except for `get_inner_trade_data`, whose upstream exposes a single source, every data tool takes a `source` parameter for the preferred data source and a `fallback` parameter (on by default) that decides whether the other sources of the same domain are tried when that source **raises** or **returns an empty frame**:
+Except for `get_inner_trade_data` and `get_valuation`, whose upstreams expose a single source, every data tool takes a `source` parameter for the preferred data source and a `fallback` parameter (on by default) that decides whether the other sources of the same domain are tried when that source **raises** or **returns an empty frame**:
 
 | Domain | Order tried |
 | --- | --- |
@@ -152,6 +152,21 @@ Get key financial metrics from the three major financial statements.
 - `recent_n` (number, optional): Number of most recent records to return (default: 10)
 
 </details>
+
+#### `get_valuation`
+Get daily valuation history: PE (TTM and static), PB, PEG, price/cash, price/sales, share counts and market cap, from Eastmoney's per-stock valuation series.
+
+<details>
+<summary>Parameters</summary>
+
+- `symbol` (string, required): A-share stock code (e.g. '000001')
+- `recent_n` (number, optional): Number of most recent trading days to return, oldest first (default: 10; null returns the full history back to 2018)
+
+</details>
+
+Returned fields follow the upstream: `数据日期`, `当日收盘价`, `当日涨跌幅`, `总市值`, `流通市值`, `总股本`, `流通股本`, `PE(TTM)`, `PE(静)`, `市净率`, `PEG值`, `市现率`, `市销率`.
+
+No fallback: no other source publishes this daily valuation panel, so a failure surfaces rather than being answered from a series with different fields.
 
 #### `get_time_info`
 Get current time with ISO format, timestamp, and the last trading day.
