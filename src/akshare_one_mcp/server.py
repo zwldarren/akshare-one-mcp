@@ -409,8 +409,13 @@ def get_time_info() -> dict:
     local_time = datetime.now().astimezone()
     current_date = local_time.date()
 
-    # Get trading calendar
-    trade_date_df = ak.tool_trade_date_hist_sina()
+    # akshare 1.20.45 renamed ``tool_trade_date_hist_sina`` to
+    # ``calendar_trade_date_hist_sina``; keep the old name as a fallback so older
+    # releases keep working. Both return a frame with a ``trade_date`` column.
+    calendar = getattr(ak, "calendar_trade_date_hist_sina", None) or (
+        ak.tool_trade_date_hist_sina
+    )
+    trade_date_df = calendar()
     trade_dates = [d for d in trade_date_df["trade_date"]]
 
     # Filter dates <= current date and sort descending
