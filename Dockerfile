@@ -3,8 +3,10 @@ FROM python:3.12-slim
 ENV PYTHONUNBUFFERED=1
 WORKDIR /app
 
-# Copy project files
-COPY pyproject.toml uv.lock README.md ./
+# Copy project files. LICENSE is not optional: pyproject.toml declares
+# `license-files = ["LICENSE"]` (PEP 639), and the build backend refuses to
+# produce metadata when that glob matches nothing.
+COPY pyproject.toml uv.lock README.md LICENSE ./
 COPY src ./src
 
 # Install build tools and package

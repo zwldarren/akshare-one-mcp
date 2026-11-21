@@ -26,39 +26,25 @@ wheels = [
 ]
 
 [[package]]
-name = "akracer"
-version = "0.0.14"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/1e/c6/f38feed5b961d73e1b4cb049fdb45338356e0f5b828b230c00d0e51f3137/akracer-0.0.14.tar.gz", hash = "sha256:e084c14bf6d9a02d5da375e3af1cba3d46f103aa1cf3a2010593b3e95bf1c29a", size = 10047643, upload-time = "2025-09-10T13:47:34.811Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/53/cb/1041355b14cd4b76ac082e8c676858f6eddb78f0ba37c59284adf36e5103/akracer-0.0.14-py3-none-any.whl", hash = "sha256:629eaccd0e1d18366804b797eb2692ed47bed0028f55b5a5af3cc277d521df04", size = 10076442, upload-time = "2025-09-10T13:47:29.061Z" },
-]
-
-[[package]]
 name = "akshare"
-version = "1.19.3"
+version = "1.20.65"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "akracer", marker = "sys_platform == 'linux'" },
     { name = "beautifulsoup4" },
     { name = "curl-cffi" },
-    { name = "decorator" },
     { name = "html5lib" },
-    { name = "jsonpath" },
     { name = "lxml" },
-    { name = "mini-racer", marker = "sys_platform != 'linux'" },
+    { name = "mini-racer" },
     { name = "openpyxl" },
     { name = "pandas" },
-    { name = "py-mini-racer", marker = "sys_platform == 'linux'" },
     { name = "requests" },
-    { name = "tabulate" },
     { name = "tqdm" },
     { name = "urllib3" },
     { name = "xlrd" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/f1/21/ce0ac9db42f3762f81b3d6b531248cf50a656ba1e1c355640ca7d8848581/akshare-1.19.3.tar.gz", hash = "sha256:c63a17211ea018b9921befd07da1b2c548026cf2a6d7b7b1e7d01a5e0f41ad00", size = 1052090, upload-time = "2026-10-23T11:20:07.444Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/55/22/cc349d967c2430c30508baec614020a76737069345e218e2a72622a9063e/akshare-1.20.65.tar.gz", hash = "sha256:14a877d4b36ca9afdea4663ff3c494616ed5fd57e239f39def47f72ec7728c91", size = 987126, upload-time = "2026-11-15T13:27:23.075Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/a9/cd/e7a1b9e60bc6fd12fae26b17326d535413cc845379090aa4b05f3cbcddb0/akshare-1.19.3-py3-none-any.whl", hash = "sha256:a93cbe67acf2042e922bc05a3a817ee51406e21855b8da98e23fa60b18325b12", size = 1265512, upload-time = "2026-10-23T11:20:05.811Z" },
+    { url = "https://files.pythonhosted.org/packages/c2/df/d41d6716bff96bb600f5ec69f7ddc545dc6148f48b1e855191da4514b576/akshare-1.20.65-py3-none-any.whl", hash = "sha256:53b734bc6cdb24eb10ca7b5d9b013b7a9d986439a771ef51891ff228a9952d64", size = 1146639, upload-time = "2026-11-15T13:27:21.282Z" },
 ]
 
 [[package]]
@@ -83,6 +69,7 @@ name = "akshare-one-mcp"
 version = "0.5.0"
 source = { editable = "." }
 dependencies = [
+    { name = "akshare" },
     { name = "akshare-one" },
     { name = "fastmcp" },
     { name = "pandas" },
@@ -98,6 +85,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
+    { name = "akshare", specifier = ">=1.18.0" },
     { name = "akshare-one", specifier = ">=0.6.0" },
     { name = "fastmcp", specifier = ">=2.11.3" },
     { name = "pandas", specifier = ">=2.0" },
@@ -710,15 +698,6 @@ wheels = [
 ]
 
 [[package]]
-name = "decorator"
-version = "5.3.1"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/60/8b/32f9823da46cde7df2087faa08cd98d01b908f8dcab982cdba9c84e85355/decorator-5.3.1.tar.gz", hash = "sha256:4cbcdd55a6efadb9dbea26b858f4fb3264567b52d69ca0d25b721b553f60ea82", size = 58084, upload-time = "2026-05-18T06:03:28.057Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/05/7f/798705f5296a58ca505d600456748d1be48078eac8a7050d8a98bc9edb89/decorator-5.3.1-py3-none-any.whl", hash = "sha256:f47fe6fdbd2edd623ecfe36875d37aba411624e2670dd395dddae1358689bb3c", size = 10365, upload-time = "2026-05-18T06:03:26.517Z" },
-]
-
-[[package]]
 name = "dnspython"
 version = "2.9.0"
 source = { registry = "https://pypi.org/simple" }
@@ -928,12 +907,6 @@ sdist = { url = "https://files.pythonhosted.org/packages/bd/15/48ff246732232d35e
 wheels = [
     { url = "https://files.pythonhosted.org/packages/df/9f/934db284aa22f37af59708e382903860d4b81329c137b1b0ed2745daeb65/joserfc-1.7.7-py3-none-any.whl", hash = "sha256:06979cfbab78bc802f14c0358f32969826cc26720e13cb38926ffdc86bc0cb2c", size = 71758, upload-time = "2026-10-19T00:30:28.498Z" },
 ]
-
-[[package]]
-name = "jsonpath"
-version = "0.82.2"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/cf/a1/693351acd0a9edca4de9153372a65e75398898ea7f8a5c722ab00f464929/jsonpath-0.82.2.tar.gz", hash = "sha256:d87ef2bcbcded68ee96bc34c1809b69457ecec9b0c4dd471658a12bd391002d1", size = 10353, upload-time = "2023-08-24T18:57:55.459Z" }
 
 [[package]]
 name = "jsonref"
@@ -1264,6 +1237,10 @@ sdist = { url = "https://files.pythonhosted.org/packages/71/b0/5b200bdf093433f19
 wheels = [
     { url = "https://files.pythonhosted.org/packages/27/2c/5857ee4e1714db8956aa878dc90255557458c124f93163704e7de948be03/mini_racer-0.14.1-py3-none-macosx_10_9_x86_64.whl", hash = "sha256:a401ecdf5f73d4714b76dc3a4c9b5780059cf4c59a5b64cff7497dc6c219d5a0", size = 19988474, upload-time = "2026-02-01T05:53:03.998Z" },
     { url = "https://files.pythonhosted.org/packages/09/bf/ecaad0c208b9d8bd8f2141f7fa5e520b66915945a2ed56c520524df75fcb/mini_racer-0.14.1-py3-none-macosx_11_0_arm64.whl", hash = "sha256:56cc6965a1665a50d8d613bc43aa83b4cec6b1f09acc69dc4c2845dacb201463", size = 18511166, upload-time = "2026-02-01T05:53:07.059Z" },
+    { url = "https://files.pythonhosted.org/packages/56/0c/5260cc29908777c91391dd8b61be9042a3d1c089e6bfc798cd403e44e87d/mini_racer-0.14.1-py3-none-manylinux_2_27_aarch64.whl", hash = "sha256:7f93d91973ddb2da4e899e06ecb426bfe7ea103cd1c92687ec9c38f206f375eb", size = 21929528, upload-time = "2026-02-01T05:53:10.22Z" },
+    { url = "https://files.pythonhosted.org/packages/c2/3c/c5bd479784826bbbc69f713aae2bcfd5ef353ba4e5e0e661666938474535/mini_racer-0.14.1-py3-none-manylinux_2_27_x86_64.whl", hash = "sha256:cdf3a088e1363f16a695288f882abf76b3705b8e1df21418208b87ed010037a4", size = 22178205, upload-time = "2026-02-01T05:53:13.407Z" },
+    { url = "https://files.pythonhosted.org/packages/eb/d4/89905a4238be7ea9afec2f10533668f68898c82914ddd91b2729be547eca/mini_racer-0.14.1-py3-none-musllinux_1_2_aarch64.whl", hash = "sha256:6788f31608c6c5d0faac4e6b4f36fc5498885f951e510717e8825eaebae6a4c5", size = 21837359, upload-time = "2026-02-01T05:53:16.762Z" },
+    { url = "https://files.pythonhosted.org/packages/11/1d/735c5d74239bd0d7d3b271d7f3c91f337c7f937d748dadc2c1c9579df475/mini_racer-0.14.1-py3-none-musllinux_1_2_x86_64.whl", hash = "sha256:ad4b5c15993caab571fac3d67e0d55157b358bd439e629e0fef26c45a12c8bab", size = 22178200, upload-time = "2026-02-01T05:53:19.414Z" },
     { url = "https://files.pythonhosted.org/packages/78/60/e0708ea8533e928f10f985be35af4c02dd2b61f4a7501dc88e8c927d85e5/mini_racer-0.14.1-py3-none-win_amd64.whl", hash = "sha256:4abd58c62c9955988dbc0cbf5a798914334fe570d2b192f8890bec20135ab6d1", size = 15515732, upload-time = "2026-02-01T05:53:22.276Z" },
     { url = "https://files.pythonhosted.org/packages/99/fd/7fb43e269c44e5d44ef02fbd164fc11833d8293b47ddcd48e4fb1649f4d2/mini_racer-0.14.1-py3-none-win_arm64.whl", hash = "sha256:440bef1269655b1da94b550612b50669de9881c3d88b805c139f7f1b5ec8ae7b", size = 14829128, upload-time = "2026-02-01T05:53:24.983Z" },
 ]
@@ -1570,15 +1547,6 @@ filetree = [
 ]
 memory = [
     { name = "cachetools" },
-]
-
-[[package]]
-name = "py-mini-racer"
-version = "0.6.0"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/50/97/a578b918b2e5923dd754cb60bb8b8aeffc85255ffb92566e3c65b148ff72/py_mini_racer-0.6.0.tar.gz", hash = "sha256:f71e36b643d947ba698c57cd9bd2232c83ca997b0802fc2f7f79582377040c11", size = 5994836, upload-time = "2021-04-22T07:58:35.993Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/29/a9/8ce0ca222ef04d602924a1e099be93f5435ca6f3294182a30574d4159ca2/py_mini_racer-0.6.0-py2.py3-none-manylinux1_x86_64.whl", hash = "sha256:42896c24968481dd953eeeb11de331f6870917811961c9b26ba09071e07180e2", size = 5416149, upload-time = "2021-04-22T07:58:25.615Z" },
 ]
 
 [[package]]
@@ -2089,15 +2057,6 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/ad/eb/4e197bf26b023abafc5e9043ec8710d7de0fcb032d0969045236d72aa0b1/starlette-1.9.0.tar.gz", hash = "sha256:3d931de246ed870e35ce605974440816ef895e592f255d1396cfdf191d4c4318", size = 2732466, upload-time = "2026-10-18T15:50:33.189Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/f3/93/181df62699d9b5aca1d87e5cfda131dac87e3cdaebf668662f7206ca3470/starlette-1.9.0-py3-none-any.whl", hash = "sha256:fd3f159936e882d06c1108f84688f7cda2cf85fc6a592a50edbd175e882c2ddc", size = 80335, upload-time = "2026-10-18T15:50:31.526Z" },
-]
-
-[[package]]
-name = "tabulate"
-version = "0.10.0"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/46/58/8c37dea7bbf769b20d58e7ace7e5edfe65b849442b00ffcdd56be88697c6/tabulate-0.10.0.tar.gz", hash = "sha256:e2cfde8f79420f6deeffdeda9aaec3b6bc5abce947655d17ac662b126e48a60d", size = 91754, upload-time = "2026-03-04T18:55:34.402Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/99/55/db07de81b5c630da5cbf5c7df646580ca26dfaefa593667fc6f2fe016d2e/tabulate-0.10.0-py3-none-any.whl", hash = "sha256:f0b0622e567335c8fabaaa659f1b33bcb6ddfe2e496071b743aa113f8774f2d3", size = 39814, upload-time = "2026-03-04T18:55:31.284Z" },
 ]
 
 [[package]]

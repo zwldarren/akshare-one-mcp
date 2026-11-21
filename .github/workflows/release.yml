@@ -41,40 +41,11 @@ jobs:
       - name: Type check
         run: uv run mypy src
 
-      # Stands in for a test suite: this project has none, so verify that the
-      # locked akshare-one and fastmcp still provide what the server calls into.
+      # Stands in for a test suite: this project has none. scripts/smoke_test.py
+      # checks that the locked packages still expose every name server.py reaches
+      # into (akshare and akshare-one alike) and that the tool set is unchanged.
       - name: Smoke test
-        run: |
-          uv run python - <<'PY'
-          import asyncio
-          import pathlib
-          import re
-
-          import akshare_one as ako
-          from akshare_one import indicators
-          from fastmcp import Client
-
-          from akshare_one_mcp.server import mcp
-
-          source = pathlib.Path("src/akshare_one_mcp/server.py").read_text()
-          missing = [
-              f"{alias}.{name}"
-              for alias, module in (("ako", ako), ("indicators", indicators))
-              for name in sorted(set(re.findall(rf"\b{alias}\.(\w+)", source)))
-              if not hasattr(module, name)
-          ]
-          if missing:
-              raise SystemExit(f"akshare-one API mismatch: {', '.join(missing)}")
-
-
-          async def main() -> None:
-              async with Client(mcp) as client:
-                  tools = await client.list_tools()
-              print(f"{len(tools)} tools registered: {sorted(t.name for t in tools)}")
-
-
-          asyncio.run(main())
-          PY
+        run: uv run python scripts/smoke_test.py
 
       - name: Verify tag matches pyproject version
         run: |

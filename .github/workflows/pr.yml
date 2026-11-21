@@ -1,0 +1,57 @@
+name: PR checks
+
+# The release workflows only run on a tag or a dispatch, so before this file
+# existed nothing validated a pull request: dependabot PRs were merged on trust,
+# and a lockfile bump that broke the server would only surface at release time.
+# This runs the same static checks release.yml runs, on every PR and on pushes to
+# main.
+#
+# Deliberately not a required check: main has no branch protection, and this is a
+# single-maintainer repository where a stuck queue would cost more than it saves.
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions: {}
+
+concurrency:
+  # A new push supersedes the previous run for the same PR; the group is keyed by
+  # ref so pushes to main do not cancel a PR that happens to be running.
+  group: pr-checks-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v10.3.3
+        with:
+          enable-cache: true
+
+      # --locked, so a PR that edits pyproject.toml without regenerating uv.lock
+      # fails here instead of at release time.
+      - name: Install dependencies
+        run: uv sync --locked
+
+      - name: Lint
+        run: |
+          uv run ruff check .
+          uv run ruff format --check .
+
+      - name: Type check
+        run: uv run mypy src
+
+      - name: Smoke test
+        run: uv run python scripts/smoke_test.py
+
+      # The Dockerfile pip-installs the package from a subset of the repo, so it
+      # can break without touching any Python code. It did: adding PEP 639
+      # `license-files` made the build fail because LICENSE was not copied in.
+      - name: Build the Docker image
+        run: docker build -t akshare-one-mcp:pr .
