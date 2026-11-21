@@ -15,7 +15,11 @@ dependencies = [
     # Declaring it here also puts it in front of dependabot instead of leaving the
     # transitive floor to drift out from under us.
     "akshare>=1.18.0",
-    "akshare-one>=0.6.0",
+    # 0.6.1 is the first akshare-one that survives akshare 1.20.46+, which is
+    # what `pip install akshare` puts on a machine today. 0.6.0 still calls
+    # stock_zh_a_hist and stock_zh_a_daily, both removed upstream, so every
+    # historical fallback below eastmoney_direct's first try was dead.
+    "akshare-one>=0.6.1",
     "fastmcp>=2.11.3",
     "uvicorn>=0.35.0",
     # Imported directly by providers.py to type the fallback helper (akshare-one
