@@ -164,7 +164,7 @@ Get daily valuation history: PE (TTM and static), PB, PEG, price/cash, price/sal
 
 </details>
 
-Returned fields follow the upstream: `数据日期`, `当日收盘价`, `当日涨跌幅`, `总市值`, `流通市值`, `总股本`, `流通股本`, `PE(TTM)`, `PE(静)`, `市净率`, `PEG值`, `市现率`, `市销率`.
+Returned fields keep the upstream's Chinese names: `数据日期`, `当日收盘价`, `当日涨跌幅`, `总市值`, `流通市值`, `总股本`, `流通股本`, `PE(TTM)`, `PE(静)`, `市净率`, `PEG值`, `市现率`, `市销率`. This is the one tool whose keys are not akshare-one's English vocabulary, because akshare-one has no valuation domain to project them onto.
 
 No fallback: no other source publishes this daily valuation panel, so a failure surfaces rather than being answered from a series with different fields.
 

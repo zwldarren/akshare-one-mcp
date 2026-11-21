@@ -416,9 +416,19 @@ def get_valuation(
     Get daily valuation history: PE (TTM and static), PB, PEG, price/cash,
     price/sales, share counts and market cap.
 
-    The upstream is Eastmoney's per-stock valuation series. No other source
-    publishes the same daily panel, so there is no fallback: a failure surfaces
-    instead of being answered from a series with different fields.
+    The upstream is Eastmoney's per-stock valuation series, called through
+    akshare rather than akshare-one: akshare-one has no valuation domain yet, so
+    there is no ako.get_valuation to route through and nothing in providers.py
+    to fall back over. Every other data tool goes through that layer, and this
+    one should move onto it as soon as upstream gains the domain.
+
+    No other source publishes the same daily panel, so there is no source or
+    fallback parameter: a failure surfaces instead of being answered from a
+    series with different fields.
+
+    Unlike the other tools, the records keep the upstream's Chinese field names
+    verbatim (数据日期, PE(TTM), ...), because akshare-one's English vocabulary
+    does not cover this domain and inventing one here would pre-empt it.
     """
     df = ak.stock_value_em(symbol=symbol)
     if df.empty:

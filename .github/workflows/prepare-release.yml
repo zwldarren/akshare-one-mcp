@@ -41,6 +41,11 @@ jobs:
       - name: Type check
         run: uv run mypy src
 
+      # The version bump below is committed and tagged without another CI run, so
+      # verify the locked packages here too rather than trusting an earlier check.
+      - name: Smoke test
+        run: uv run python scripts/smoke_test.py
+
       # The input reaches the shell through the environment rather than being
       # interpolated into the script text, so a crafted value cannot run commands.
       - name: Validate version input

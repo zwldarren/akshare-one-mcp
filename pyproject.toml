@@ -8,6 +8,13 @@ license-files = ["LICENSE"]
 authors = [{ name = "zwldarren", email = "zwldarren@gmail.com" }]
 requires-python = ">=3.12"
 dependencies = [
+    # get_time_info and get_valuation call akshare directly, below the akshare-one
+    # layer, so the floor is ours to declare rather than one we inherit. Take the
+    # same range akshare-one supports: get_time_info resolves the trading-calendar
+    # function by name at runtime, so it works on both sides of the 1.20.45 rename.
+    # Declaring it here also puts it in front of dependabot instead of leaving the
+    # transitive floor to drift out from under us.
+    "akshare>=1.18.0",
     "akshare-one>=0.6.0",
     "fastmcp>=2.11.3",
     "uvicorn>=0.35.0",
