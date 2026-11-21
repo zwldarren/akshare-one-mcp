@@ -404,13 +404,46 @@ def get_financial_metrics(
 
 
 @mcp.tool
+def get_valuation(
+    symbol: Annotated[
+        str, Field(description="A-share stock symbol/ticker (e.g. '000001')")
+    ],
+    recent_n: Annotated[
+        int | None, Field(description="Number of most recent records to return", ge=1)
+    ] = 10,
+) -> str:
+    """
+    Get daily valuation history: PE (TTM and static), PB, PEG, price/cash,
+    price/sales, share counts and market cap.
+
+    The upstream is Eastmoney's per-stock valuation series. No other source
+    publishes the same daily panel, so there is no fallback: a failure surfaces
+    instead of being answered from a series with different fields.
+    """
+    df = ak.stock_value_em(symbol=symbol)
+    if df.empty:
+        return "[]"
+    # Upstream hands back a datetime column; return plain dates, and keep the
+    # Chinese field names escaped-free so the JSON stays readable as it is.
+    df = df.assign(数据日期=pd.to_datetime(df["数据日期"]).dt.strftime("%Y-%m-%d"))
+    if recent_n is not None:
+        df = df.tail(recent_n)  # oldest-first upstream
+    return df.to_json(orient="records", force_ascii=False) or "[]"
+
+
+@mcp.tool
 def get_time_info() -> dict:
     """Get current time with ISO format, timestamp, and the last trading day."""
     local_time = datetime.now().astimezone()
     current_date = local_time.date()
 
-    # Get trading calendar
-    trade_date_df = ak.tool_trade_date_hist_sina()
+    # akshare 1.20.45 renamed ``tool_trade_date_hist_sina`` to
+    # ``calendar_trade_date_hist_sina``; keep the old name as a fallback so older
+    # releases keep working. Both return a frame with a ``trade_date`` column.
+    calendar = getattr(ak, "calendar_trade_date_hist_sina", None) or (
+        ak.tool_trade_date_hist_sina
+    )
+    trade_date_df = calendar()
     trade_dates = [d for d in trade_date_df["trade_date"]]
 
     # Filter dates <= current date and sort descending
