@@ -49,7 +49,7 @@ wheels = [
 
 [[package]]
 name = "akshare-one"
-version = "0.6.1"
+version = "0.7.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "akshare" },
@@ -59,9 +59,9 @@ dependencies = [
     { name = "pandas" },
     { name = "requests" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/eb/80/8117c7be6ee85f47274b8acc62623036f0ba4054f84ed12d802577bc6c32/akshare_one-0.6.1.tar.gz", hash = "sha256:745a5300e3e99554e9247eb3b54cb858aa686dead2ace7149c37619b4ed4d8be", size = 57013, upload-time = "2026-11-21T10:23:54.688Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/cb/39/d1a43b28d8a576ea9f0886acb2eeb7d3fa8162baa540101dfacc36d38ab5/akshare_one-0.7.0.tar.gz", hash = "sha256:8222cd99a6115fded0385e7edf656673545acd3a7ee3f66fe115bf763b0bf7dd", size = 62042, upload-time = "2026-11-22T07:50:35.361Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/dc/01/a6ce0dd54641176acd32b8ac26ebc46443fe50a98b23de100418fab53131/akshare_one-0.6.1-py3-none-any.whl", hash = "sha256:12a86e710c2d440fd74766fb2c028326c8a04b7176c5da3130b11aa92dccf867", size = 84737, upload-time = "2026-11-21T10:23:53.541Z" },
+    { url = "https://files.pythonhosted.org/packages/5e/13/e89006ea437fffb60b1f72e6e7621d76aa4b73f6ce56064e66911364f7e2/akshare_one-0.7.0-py3-none-any.whl", hash = "sha256:a45dfb52ac2a5b0af7a867455fb3fd3ed5418e6ffc1702b9dff5cf8b8040e335", size = 85281, upload-time = "2026-11-22T07:50:33.958Z" },
 ]
 
 [[package]]
@@ -87,7 +87,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "akshare", specifier = ">=1.18.1" },
-    { name = "akshare-one", specifier = ">=0.6.1" },
+    { name = "akshare-one", specifier = ">=0.7.0" },
     { name = "fastmcp", specifier = ">=2.11.3" },
     { name = "pandas", specifier = ">=2.0" },
     { name = "pysocks", specifier = ">=1.7.1" },
