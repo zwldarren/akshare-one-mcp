@@ -68,7 +68,12 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           uv version "$VERSION"
-          git add pyproject.toml uv.lock
+          # server.json carries the version too, and pr.yml fails when it drifts from
+          # pyproject.toml. publish-registry.yml rewrites its own copy at publish
+          # time but never commits that back, so the bump has to happen here.
+          jq --arg v "$VERSION" '.version = $v | .packages[0].version = $v' server.json > server.json.tmp
+          mv server.json.tmp server.json
+          git add pyproject.toml uv.lock server.json
           git commit -m "chore(release): bump version to $VERSION"
           git tag "v$VERSION"
           git push origin HEAD:"${GITHUB_REF_NAME}" "v$VERSION"
