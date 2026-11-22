@@ -241,6 +241,15 @@ Add the following configuration to your MCP Client settings:
    }
    ```
 
+### Using a proxy
+
+The data tools reach their upstreams through `requests`, so a proxy is picked up from
+the usual `HTTP_PROXY` / `HTTPS_PROXY` / `ALL_PROXY` variables. A SOCKS proxy
+(`socks5://...`) needs `PySocks`; it is declared as a dependency, so `uvx` and
+`pip install` bring it in and no extra step is required. If the package was installed
+with `--no-deps`, run `pip install pysocks`, otherwise every data tool answers with
+`Missing dependencies for SOCKS support` (issue #23).
+
 ## Technical Indicators Reference
 
 The `get_hist_data` tool supports the following technical indicators:
