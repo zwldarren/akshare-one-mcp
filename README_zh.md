@@ -245,6 +245,14 @@ npx -y @smithery/cli install @zwldarren/akshare-one-mcp --client claude
    }
    ```
 
+## 使用代理
+
+数据工具通过 `requests` 访问上游，所以常见的 `HTTP_PROXY` / `HTTPS_PROXY` / `ALL_PROXY`
+环境变量会直接生效。SOCKS 代理（`socks5://...`）需要 `PySocks`，它已声明为依赖，`uvx` 和
+`pip install` 会自动装上，无需额外步骤。如果安装时用了 `--no-deps`，请执行
+`pip install pysocks`，否则所有数据工具都会返回 `Missing dependencies for SOCKS support`
+（issue #23）。
+
 ## 技术指标
 
 `get_hist_data` 工具支持下面这些技术分析指标：

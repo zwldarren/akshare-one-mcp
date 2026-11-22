@@ -47,6 +47,19 @@ jobs:
       - name: Type check
         run: uv run mypy src
 
+      # server.json is rewritten by publish-registry.yml at release time but never
+      # committed back, so the copy in the repo only stays current if something
+      # fails when it drifts. It had sat at 0.3.9 through five releases.
+      - name: server.json matches the package version
+        run: |
+          project="$(python3 -c 'import tomllib; print(tomllib.load(open("pyproject.toml", "rb"))["project"]["version"])')"
+          declared="$(python3 -c 'import json; print(json.load(open("server.json"))["version"])')"
+          packaged="$(python3 -c 'import json; print(json.load(open("server.json"))["packages"][0]["version"])')"
+          if [ "$declared" != "$project" ] || [ "$packaged" != "$project" ]; then
+            echo "::error::server.json is at ${declared}/${packaged} but pyproject.toml is at ${project}"
+            exit 1
+          fi
+
       - name: Smoke test
         run: uv run python scripts/smoke_test.py
 

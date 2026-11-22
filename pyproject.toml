@@ -13,8 +13,10 @@ dependencies = [
     # same range akshare-one supports: get_time_info resolves the trading-calendar
     # function by name at runtime, so it works on both sides of the 1.20.45 rename.
     # Declaring it here also puts it in front of dependabot instead of leaving the
-    # transitive floor to drift out from under us.
-    "akshare>=1.18.0",
+    # transitive floor to drift out from under us. 1.18.1 rather than 1.18.0: the
+    # 1.18 line starts at 1.18.1 on PyPI, so 1.18.0 is a floor no install can
+    # satisfy — and akshare-one's floor was moved to match.
+    "akshare>=1.18.1",
     # 0.6.1 is the first akshare-one that survives akshare 1.20.46+, which is
     # what `pip install akshare` puts on a machine today. 0.6.0 still calls
     # stock_zh_a_hist and stock_zh_a_daily, both removed upstream, so every
@@ -26,6 +28,12 @@ dependencies = [
     # pulls pandas in too, but we depend on it explicitly so this package keeps
     # working if akshare-one changes its dependency set).
     "pandas>=2.0",
+    # Every upstream is reached through requests, and requests only understands a
+    # SOCKS proxy when PySocks is importable. Without this, a user behind one —
+    # `ALL_PROXY=socks5://...` in China is the common case (issue #23) — gets
+    # "Missing dependencies for SOCKS support" from every data tool with no hint
+    # that the fix is a package install.
+    "pysocks>=1.7.1",
 ]
 keywords = ["akshare", "stock", "mcp", "mcp-server"]
 classifiers = [
