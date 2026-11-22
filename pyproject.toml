@@ -17,11 +17,13 @@ dependencies = [
     # 1.18 line starts at 1.18.1 on PyPI, so 1.18.0 is a floor no install can
     # satisfy — and akshare-one's floor was moved to match.
     "akshare>=1.18.1",
-    # 0.6.1 is the first akshare-one that survives akshare 1.20.46+, which is
-    # what `pip install akshare` puts on a machine today. 0.6.0 still calls
+    # 0.6.1 was the first akshare-one that survives akshare 1.20.46+, which is
+    # what `pip install akshare` puts on a machine today (0.6.0 still called
     # stock_zh_a_hist and stock_zh_a_daily, both removed upstream, so every
-    # historical fallback below eastmoney_direct's first try was dead.
-    "akshare-one>=0.6.1",
+    # historical fallback below eastmoney_direct's first try was dead). 0.7.0
+    # carries the same interface and drops the Python 3.10 leg whose lock could
+    # only resolve a soupsieve with an open advisory.
+    "akshare-one>=0.7.0",
     "fastmcp>=2.11.3",
     "uvicorn>=0.35.0",
     # Imported directly by providers.py to type the fallback helper (akshare-one
